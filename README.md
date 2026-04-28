@@ -1,2 +1,113 @@
 # levels-fyi-mcp
-Levels FYI MCP Server
+
+MCP Server for querying compensation data from [levels.fyi](https://levels.fyi). 
+
+## What this server provides
+
+Server name: `MyPlayground`
+
+Tools:
+- `calculate_addition(a: int, b: int) -> int`
+- `get_mock_weather(city: str) -> str` (mock weather, not real API data)
+- `generate_username(base_name: str, add_numbers: bool = true) -> str`
+
+## End User Installation (Use in Cursor)
+
+This section is for users who only want to install and run the MCP server in Cursor.
+
+### Requirements
+
+- Python `>=3.11`
+- [uv](https://docs.astral.sh/uv/)
+
+### Cursor MCP configuration (recommended)
+
+Use `uv run` so Cursor uses the project environment directly.
+
+```json
+{
+  "mcpServers": {
+    "user-MyPlayground": {
+      "command": "uv",
+      "args": ["run", "python", "main.py"],
+      "cwd": "/absolute/path/to/levels-fyi-mcp"
+    }
+  }
+}
+```
+
+### Start using it
+
+1. Open Cursor MCP settings and add the server config above.
+2. Ensure `cwd` points to your local clone of this repo.
+3. Start/reload MCP servers in Cursor.
+4. Call tools such as `calculate_addition`, `get_mock_weather`, and `generate_username`.
+
+### Optional: direct `fastmcp` command
+
+If you prefer `command: "fastmcp"` in Cursor, install it as a global tool:
+
+```bash
+uv tool install fastmcp
+```
+
+If Cursor cannot find `fastmcp`, use the recommended `uv run` config above.
+
+## Developer Setup
+
+This section is for contributors working on code changes.
+
+### Install dependencies
+
+From the project root:
+
+```bash
+uv sync
+```
+
+### Run server locally
+
+```bash
+uv run python main.py
+```
+
+### Add or update dependencies
+
+```bash
+uv add <package>
+uv sync
+```
+
+### Quick environment check
+
+```bash
+uv run python -c "import fastmcp; print('fastmcp ok')"
+```
+
+## Project structure
+
+```text
+.
+├── main.py
+├── pyproject.toml
+└── README.md
+```
+
+## Troubleshooting
+
+### Failed to spawn: fastmcp (os error 2)
+
+Cause: Cursor cannot find the `fastmcp` executable.
+
+Fix:
+1. Prefer Cursor config with `uv run python main.py`, or
+2. Install global tool with `uv tool install fastmcp` and ensure PATH includes the uv tool bin (commonly `~/.local/bin`).
+
+### Tool argument type errors
+
+- `generate_username.add_numbers` must be boolean (`true`/`false`), not numbers or strings.
+
+## Notes
+
+- `get_mock_weather` returns randomized mock data for demos.
+- Tool logs are printed from `main.py` and appear in server output.

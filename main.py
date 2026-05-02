@@ -1,6 +1,6 @@
 from fastmcp import FastMCP
 import random
-from utils import get_company_slug,get_location_details, get_role_slug,ResponseUtil, preprocess_levels,format_offer_date
+from utils import get_company_slug, get_location_details, get_role_slug,ResponseUtil, preprocess_levels,format_offer_date
 from fake_useragent import UserAgent
 import requests
 

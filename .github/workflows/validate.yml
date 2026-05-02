@@ -13,5 +13,8 @@ jobs:
       - name: Install dependencies
         run: uv sync
 
+      - name: Linter
+        run: uvx ruff check .
+
       - name: Validate MCP Server Schema
         run: uv run fastmcp inspect main.py:mcp

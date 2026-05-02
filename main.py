@@ -36,12 +36,13 @@ def generate_username(base_name: str, add_numbers: bool = True) -> str:
 
 # Get Recent Offers Tool
 @mcp.tool()
-def get_recent_offers(company_name: str, job_family: str, level: str) -> dict:
+def get_recent_offers(company_name: str, role: str, level: str) -> dict:
     """
     Fetch the most recent specific salary offers for a given role to gauge current market trends.
-    Example: company_name='Amazon', job_family='software-engineer', level='SDE II'
+    Example: company_name='Amazon', role='Software Engineer', level='SDE II'
     """
     company_slug = get_company_slug(company_name)
+    job_family = get_role_slug(role)
     print(f"Server log: Fetching recent offers for {company_slug} - {level}")
     
     url = "https://api.levels.fyi/v3/salary/search"

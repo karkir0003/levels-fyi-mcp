@@ -32,6 +32,15 @@ class ResponseUtil:
         decompressed_data = zlib.decompress(decrypted_data)
         return json.loads(decompressed_data.decode())
 
+def get_role_slug(role_name: str) -> str:
+    """
+    Converts 'Software Engineer' to 'software-engineer'.
+
+    Best effort conversion
+    """
+    return role_name.lower().strip().replace(" ", "-")
+
+
 def format_offer_date(date_str: str) -> str:
     """
     Sanitizes JavaScript Date.toString() outputs into standard ISO 8601 strings.

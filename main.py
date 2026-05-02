@@ -1,6 +1,6 @@
 from fastmcp import FastMCP
 import random
-from utils import get_company_slug, get_role_slug,ResponseUtil, format_offer_date
+from utils import get_company_slug, get_role_slug,ResponseUtil, preprocess_levels,format_offer_date
 from fake_useragent import UserAgent
 import requests
 
@@ -34,6 +34,31 @@ def generate_username(base_name: str, add_numbers: bool = True) -> str:
         username += str(random.randint(100, 999))
     return f"Your new username is: @{username}"
 
+@mcp.tool()
+def get_level_mapping(company_name: str, role: str = "Software Engineer") -> dict:
+    """
+    REQUIRED: Call this tool FIRST to find the company's specific level names 
+    (e.g., '63', 'L5', 'E4') versus the industry 'Standard' ladder.
+    'role' must be the full name: 'Software Engineer', 'Product Manager', etc.
+    """
+    company_slug = get_company_slug(company_name)
+    print(f"Server log: Mapping levels for {company_slug}")
+    
+    url = "https://api.levels.fyi/v1/levels"
+    params = {
+        "role": role,
+        "countryId": 254, # Assuming US based companies as the standardized level
+        "companies[0]": company_slug,
+    }
+    
+    res = requests.get(url, params=params, headers={"User-Agent": ua.random})
+    if res.status_code == 200:
+        util = ResponseUtil()
+        parsed_data = util.parse(res.json())
+        levels = preprocess_levels(parsed_data)
+        return {"company": company_slug, "role": role, "levels": levels}
+    return {"error": "Could not fetch level mapping."}
+
 # Get Recent Offers Tool
 @mcp.tool()
 def get_recent_offers(company_name: str, role: str, level: str) -> dict:
@@ -55,6 +80,10 @@ def get_recent_offers(company_name: str, role: str, level: str) -> dict:
         "sortOrder": "DESC",
         "currency": "USD"
     }
+
+    # Inject the DMA/City/Country IDs if a location was provided
+    if location:
+        params.update(get_location_details(location))
     
     headers = {"User-Agent": ua.random}
     response = requests.get(url, params=params, headers=headers)

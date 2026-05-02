@@ -64,7 +64,9 @@ def format_offer_date(date_str: str) -> str:
         return str(date_str)
 
 def get_company_slug(search_text: str) -> str:
-    """Hits the Levels autocomplete API to resolve a human name to a slug."""
+    """
+    Hits the Levels entity search API to resolve a company name to a slug.
+    """
     url = "https://api.levels.fyi/v2/search/entity"
     params = {"searchText": search_text}
     headers = {"User-Agent": ua.random}
@@ -79,3 +81,81 @@ def get_company_slug(search_text: str) -> str:
         print(f"Server log: Error resolving slug: {e}")
         
     return search_text.lower().replace(" ", "-").replace("'", "").replace(".", "")
+
+def get_location_details(search_text: str) -> dict:
+    """
+    Find location details for a given search query
+    Prioritizes DMAs (Market Areas) by checking both direct hits and city parents.
+
+    Example: 
+        Input:  "NYC"
+        Output: {"cityIds[]": 10182}
+    """
+    if not search_text: return {}
+    
+    url = "https://api.levels.fyi/v2/search/entity"
+    params = {
+        "searchText": search_text,
+        "searchEntityTypes[0]": "city",
+        "searchEntityTypes[1]": "dma",
+        "searchEntityTypes[2]": "country"
+    }
+    
+    try:
+        res = requests.get(url, params=params, headers={"User-Agent": ua.random})
+        if res.status_code != 200: return {}
+        
+        data = res.json()
+        if not isinstance(data, list): return {}
+
+        # The Allowlist: Only process these geographic types
+        VALID_GEO_TYPES = {"dma", "city", "country"}
+
+        for item in data:
+            item_type = item.get("type")
+            
+            # Ignore anything not in our allowlist (e.g. companies)
+            if item_type not in VALID_GEO_TYPES:
+                continue
+
+            # Market-First Logic: If we hit a DMA directly, we're done.
+            if item_type == "dma":
+                return {"dmaIds[]": item.get("id")}
+            
+            # Parent-Aware Logic: If it's a city, prioritize the market bubble (DMA)
+            if item_type == "city":
+                parent = item.get("parent")
+                if parent and parent.get("type") == "dma":
+                    print(f"Server log: Mapping city '{item.get('displayValue')}' to Market '{parent.get('displayValue')}'")
+                    return {"dmaIds[]": parent.get("id")}
+                # If no DMA parent exists, fall back to the specific city
+                return {"cityIds[]": item.get("id")}
+
+            # 4. Global Fallback: If it's a country (e.g. 'Canada')
+            if item_type == "country":
+                return {"countryIds[]": item.get("id")}
+                
+    except Exception as e:
+        print(f"Server log: Location resolution error - {e}")
+        
+    return {}
+
+def preprocess_levels(decrypted_data: dict) -> list:
+    """
+    Extracts only the level titles for the first company in the response.
+    Returns a simple list of objects that map rank to titles.
+    """
+    companies = decrypted_data.get("companies", [])
+    if not companies:
+        return []
+
+    # Just take the first company since that's the best result (the one we requested)
+    target_co = companies[0]
+    
+    # Return a clean list of just the rank and the title strings
+    return [
+        {
+            "rank": l.get("order"),
+            "titles": l.get("titles")
+        } for l in target_co.get("levels", [])
+    ]

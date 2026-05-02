@@ -1,4 +1,4 @@
-from fastmcp import FastMCP
+from fastmcp import FastMCP, Context
 import random
 from utils import get_company_slug, get_location_details, get_role_slug,ResponseUtil, preprocess_levels,format_offer_date
 from fake_useragent import UserAgent
@@ -35,14 +35,14 @@ def generate_username(base_name: str, add_numbers: bool = True) -> str:
     return f"Your new username is: @{username}"
 
 @mcp.tool()
-def get_level_mapping(company_name: str, role: str = "Software Engineer") -> dict:
+def get_level_mapping(company_name: str, role: str = "Software Engineer", ctx: Context) -> dict:
     """
     REQUIRED: Call this tool FIRST to find the company's specific level names 
     (e.g., '63', 'L5', 'E4') versus the industry 'Standard' ladder.
     'role' must be the full name: 'Software Engineer', 'Product Manager', etc.
     """
     company_slug = get_company_slug(company_name)
-    print(f"Server log: Mapping levels for {company_slug}")
+    await ctx.info(f"Server log: Mapping levels for {company_slug}")
     
     url = "https://api.levels.fyi/v1/levels"
     params = {
@@ -57,18 +57,19 @@ def get_level_mapping(company_name: str, role: str = "Software Engineer") -> dic
         parsed_data = util.parse(res.json())
         levels = preprocess_levels(parsed_data)
         return {"company": company_slug, "role": role, "levels": levels}
+    await ctx.error(f"Failed to fetch levels for {company_slug}. Status: {res.status_code}")
     return {"error": "Could not fetch level mapping."}
 
 # Get Recent Offers Tool
 @mcp.tool()
-def get_recent_offers(company_name: str, role: str, level: str, location: str = None) -> dict:
+def get_recent_offers(company_name: str, role: str, level: str, location: str = None, ctx: Context) -> dict:
     """
     Fetch the most recent specific salary offers for a given role to gauge current market trends.
     Example: company_name='Amazon', role='Software Engineer', level='SDE II'
     """
     company_slug = get_company_slug(company_name)
     job_family = get_role_slug(role)
-    print(f"Server log: Fetching recent offers for {company_slug} - {level}")
+    await ctx.info(f"Fetching offers: {company_slug} | {level} | {location or 'Global'}")
     
     url = "https://api.levels.fyi/v3/salary/search"
     params = {
@@ -83,7 +84,9 @@ def get_recent_offers(company_name: str, role: str, level: str, location: str = 
 
     # Inject the DMA/City/Country IDs if a location was provided
     if location:
-        params.update(get_location_details(location))
+        loc_details = get_location_details(location)
+        await ctx.debug(f"Location '{location}' resolved to: {loc_details}")
+        params.update(loc_details)
     
     headers = {"User-Agent": ua.random}
     response = requests.get(url, params=params, headers=headers)
@@ -110,6 +113,7 @@ def get_recent_offers(company_name: str, role: str, level: str, location: str = 
             "offers": clean_offers
         }
     else:
+        await ctx.error(f"Failed to fetch offers: {company_slug} | {level} | {location or 'Global'} - Status: {response.status_code}")
         return {"error": f"API request failed with status {response.status_code}"}
 
 if __name__ == "__main__":

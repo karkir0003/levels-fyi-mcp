@@ -35,7 +35,7 @@ def generate_username(base_name: str, add_numbers: bool = True) -> str:
     return f"Your new username is: @{username}"
 
 @mcp.tool()
-def get_level_mapping(company_name: str, role: str = "Software Engineer", ctx: Context=None) -> dict:
+async def get_level_mapping(company_name: str, role: str = "Software Engineer", ctx: Context=None) -> dict:
     """
     REQUIRED: Call this tool FIRST to find the company's specific level names 
     (e.g., '63', 'L5', 'E4') versus the industry 'Standard' ladder.
@@ -64,7 +64,7 @@ def get_level_mapping(company_name: str, role: str = "Software Engineer", ctx: C
 
 # Get Recent Offers Tool
 @mcp.tool()
-def get_recent_offers(company_name: str, role: str, level: str, location: str = None, ctx: Context=None) -> dict:
+async def get_recent_offers(company_name: str, role: str, level: str, location: str = None, ctx: Context=None) -> dict:
     """
     Fetch the most recent specific salary offers for a given role to gauge current market trends.
     Example: company_name='Amazon', role='Software Engineer', level='SDE II'

@@ -1,0 +1,17 @@
+name: Validate MCP Server
+on: [push, pull_request]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      
+      - name: Install uv
+        uses: astral-sh/setup-uv@latest
+
+      - name: Install dependencies
+        run: uv sync
+
+      - name: Validate MCP Server Schema
+        run: uv run fastmcp inspect main.py:mcp

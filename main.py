@@ -1,6 +1,6 @@
 from fastmcp import FastMCP
 import random
-from utils import get_company_slug, get_role_slug,ResponseUtil, preprocess_levels,format_offer_date
+from utils import get_company_slug,get_location_details, get_role_slug,ResponseUtil, preprocess_levels,format_offer_date
 from fake_useragent import UserAgent
 import requests
 
@@ -61,7 +61,7 @@ def get_level_mapping(company_name: str, role: str = "Software Engineer") -> dic
 
 # Get Recent Offers Tool
 @mcp.tool()
-def get_recent_offers(company_name: str, role: str, level: str) -> dict:
+def get_recent_offers(company_name: str, role: str, level: str, location: str = None) -> dict:
     """
     Fetch the most recent specific salary offers for a given role to gauge current market trends.
     Example: company_name='Amazon', role='Software Engineer', level='SDE II'

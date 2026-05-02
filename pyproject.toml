@@ -10,3 +10,8 @@ dependencies = [
     "pycryptodome>=3.23.0",
     "requests>=2.33.1",
 ]
+
+[dependency-groups]
+dev = [
+    "ruff>=0.15.12",
+]

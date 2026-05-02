@@ -91,7 +91,8 @@ def get_location_details(search_text: str) -> dict:
         Input:  "NYC"
         Output: {"cityIds[]": 10182}
     """
-    if not search_text: return {}
+    if not search_text: 
+        return {}
     
     url = "https://api.levels.fyi/v2/search/entity"
     params = {
@@ -103,10 +104,12 @@ def get_location_details(search_text: str) -> dict:
     
     try:
         res = requests.get(url, params=params, headers={"User-Agent": ua.random})
-        if res.status_code != 200: return {}
+        if res.status_code != 200: 
+            return {}
         
         data = res.json()
-        if not isinstance(data, list): return {}
+        if not isinstance(data, list): 
+            return {}
 
         # The Allowlist: Only process these geographic types
         VALID_GEO_TYPES = {"dma", "city", "country"}
@@ -155,7 +158,7 @@ def preprocess_levels(decrypted_data: dict) -> list:
     # Return a clean list of just the rank and the title strings
     return [
         {
-            "rank": l.get("order"),
-            "titles": l.get("titles")
-        } for l in target_co.get("levels", [])
+            "rank": entry.get("order"),
+            "titles": entry.get("titles")
+        } for entry in target_co.get("levels", [])
     ]

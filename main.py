@@ -1,8 +1,12 @@
 from fastmcp import FastMCP
 import random
+from utils import get_company_slug, ResponseUtil, format_offer_date
+from fake_useragent import UserAgent
+import requests
 
 # 1. Initialize the server with a name
-mcp = FastMCP("MyPlayground")
+mcp = FastMCP("LevelsFyi")
+ua = UserAgent()
 
 # Tool 1: Simple Math (Shows how MCP handles basic int inputs/outputs)
 @mcp.tool()
@@ -29,6 +33,54 @@ def generate_username(base_name: str, add_numbers: bool = True) -> str:
     if add_numbers:
         username += str(random.randint(100, 999))
     return f"Your new username is: @{username}"
+
+# Get Recent Offers Tool
+@mcp.tool()
+def get_recent_offers(company_name: str, job_family: str, level: str) -> dict:
+    """
+    Fetch the most recent specific salary offers for a given role to gauge current market trends.
+    Example: company_name='Amazon', job_family='software-engineer', level='SDE II'
+    """
+    company_slug = get_company_slug(company_name)
+    print(f"Server log: Fetching recent offers for {company_slug} - {level}")
+    
+    url = "https://api.levels.fyi/v3/salary/search"
+    params = {
+        "companySlug": company_slug,
+        "jobFamilySlug": job_family,
+        "level": level,
+        "limit": 10, # Hard limit on amount of compensation data
+        "sortBy": "offer_date",
+        "sortOrder": "DESC",
+        "currency": "USD"
+    }
+    
+    headers = {"User-Agent": ua.random}
+    response = requests.get(url, params=params, headers=headers)
+    
+    if response.status_code == 200:
+        util = ResponseUtil()
+        parsed_data = util.parse(response.json())
+        rows = parsed_data.get("rows", [])
+        
+        clean_offers = []
+        for r in rows:
+            clean_offers.append({
+                "offer_date": format_offer_date(r.get("offerDate")),
+                "total_compensation": r.get("totalCompensation"),
+                "base_salary": r.get("baseSalary"),
+                "stock_grant": r.get("avgAnnualStockGrantValue"),
+                "years_of_experience": r.get("yearsOfExperience"),
+                "location": r.get("location")
+            })
+            
+        return {
+            "resolved_company": company_slug,
+            "query": f"{company_name} | {level}",
+            "offers": clean_offers
+        }
+    else:
+        return {"error": f"API request failed with status {response.status_code}"}
 
 if __name__ == "__main__":
     mcp.run()

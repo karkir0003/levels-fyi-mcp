@@ -4,7 +4,7 @@ MCP Server for querying compensation data from [levels.fyi](https://levels.fyi).
 
 ## What this server provides
 
-Server name: `MyPlayground`
+Server name: `LevelsFyi`
 
 Tools:
 - `get_recent_offers(company_name: str, role: str, level: str, location: str = None) -> dict` (Hit levels.fyi salary search API to find the recent offer data for given company, role, level, location)

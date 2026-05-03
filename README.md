@@ -7,9 +7,8 @@ MCP Server for querying compensation data from [levels.fyi](https://levels.fyi).
 Server name: `MyPlayground`
 
 Tools:
-- `calculate_addition(a: int, b: int) -> int`
-- `get_mock_weather(city: str) -> str` (mock weather, not real API data)
-- `generate_username(base_name: str, add_numbers: bool = true) -> str`
+- `get_recent_offers(company_name: str, role: str, level: str, location: str = None) -> dict` (Hit levels.fyi salary search API to find the recent offer data for given company, role, level, location)
+- `get_level_mapping(company_name: str, role: str = "Software Engineer") -> dict` (Get the level mapping for a given job family at a company)
 
 ## End User Installation (Use in Cursor)
 
@@ -41,7 +40,7 @@ Use `uv run` so Cursor uses the project environment directly.
 1. Open Cursor MCP settings and add the server config above.
 2. Ensure `cwd` points to your local clone of this repo.
 3. Start/reload MCP servers in Cursor.
-4. Call tools such as `calculate_addition`, `get_mock_weather`, and `generate_username`.
+4. Call tools such as `get_recent_offers`, `get_level_mapping`
 
 ### Optional: direct `fastmcp` command
 

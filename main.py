@@ -1,6 +1,13 @@
 from fastmcp import FastMCP, Context
 import random
-from utils import get_company_slug, get_location_details, get_role_slug,ResponseUtil, preprocess_levels,format_offer_date
+from utils import (
+    format_offer_date,
+    get_company_slug,
+    get_location_details,
+    get_role_slug,
+    parse_levels_api_response,
+    preprocess_levels,
+)
 from fake_useragent import UserAgent
 import requests
 
@@ -54,8 +61,7 @@ async def get_level_mapping(company_name: str, role: str = "Software Engineer", 
     
     res = requests.get(url, params=params, headers={"User-Agent": ua.random})
     if res.status_code == 200:
-        util = ResponseUtil()
-        parsed_data = util.parse(res.json())
+        parsed_data = parse_levels_api_response(res.json())
         levels = preprocess_levels(parsed_data)
         return {"company": company_slug, "role": role, "levels": levels}
     if ctx:
@@ -96,8 +102,7 @@ async def get_recent_offers(company_name: str, role: str, level: str, location: 
     response = requests.get(url, params=params, headers=headers)
     
     if response.status_code == 200:
-        util = ResponseUtil()
-        parsed_data = util.parse(response.json())
+        parsed_data = parse_levels_api_response(response.json())
         rows = parsed_data.get("rows", [])
         
         clean_offers = []

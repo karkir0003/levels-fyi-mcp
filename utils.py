@@ -32,6 +32,20 @@ class ResponseUtil:
         decompressed_data = zlib.decompress(decrypted_data)
         return json.loads(decompressed_data.decode())
 
+
+_levels_response_parser = ResponseUtil()
+
+
+def parse_levels_api_response(body: dict | list) -> dict | list:
+    """
+    Decrypt/decompress Levels API JSON when wrapped in ``payload``; return passthrough body otherwise.
+
+    Plain JSON arrays/objects are returned unchanged. Prefer this over constructing ``ResponseUtil()``
+    at each call site.
+    """
+    return _levels_response_parser.parse(body)
+
+
 def get_role_slug(role_name: str) -> str:
     """
     Converts 'Software Engineer' to 'software-engineer'.
@@ -43,7 +57,7 @@ def get_role_slug(role_name: str) -> str:
 
 def format_offer_date(date_str: str) -> str:
     """
-    Sanitizes JavaScript Date.toString() outputs into standard ISO 8601 strings.
+    Sanitizes JavaScript Date.toString() outputs into standard ISO 8601 datetime strings.
     This prevents token bloat and makes it easier for the LLM to process timelines.
     
     Example: 
@@ -74,7 +88,7 @@ def get_company_slug(search_text: str) -> str:
     try:
         res = requests.get(url, params=params, headers=headers)
         if res.status_code == 200:
-            data = res.json()
+            data = parse_levels_api_response(res.json())
             if isinstance(data, list) and len(data) > 0:
                 return data[0].get("slug")
     except Exception as e:
@@ -107,7 +121,8 @@ def get_location_details(search_text: str) -> dict:
         if res.status_code != 200: 
             return {}
         
-        data = res.json()
+        data = parse_levels_api_response(res.json())
+        
         if not isinstance(data, list): 
             return {}
 

@@ -89,6 +89,7 @@ uv run python -c "import fastmcp; print('fastmcp ok')"
 ```text
 .
 ├── main.py
+├── src/
 ├── pyproject.toml
 └── README.md
 ```

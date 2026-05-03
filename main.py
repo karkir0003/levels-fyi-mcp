@@ -33,6 +33,8 @@ async def get_recent_offers(company_name: str, role: str, level: str, location: 
     """
     Fetch the most recent specific salary offers for a given role to gauge current market trends.
     Example: company_name='Amazon', role='Software Engineer', level='SDE II'
+
+    Location must be a single city name (e.g., 'Seattle'). If the city is ambiguous, the most major tech hub will be chosen by default
     """
     company_slug = get_company_slug(company_name)
     job_family = get_role_slug(role)

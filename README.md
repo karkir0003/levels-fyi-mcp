@@ -76,3 +76,7 @@ Cause: Cursor cannot find the `fastmcp` executable.
 Fix:
 1. Prefer Cursor config with `uv run python main.py`, or
 2. Install global tool with `uv tool install fastmcp` and ensure PATH includes the uv tool bin (commonly `~/.local/bin`).
+
+## Contributing
+* If you have a feature request, please create a GitHub issue to triage the requests
+* Feel free to fix any issues but please raise a Pull Request so that I can review it prior to deployment
